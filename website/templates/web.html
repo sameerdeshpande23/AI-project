@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Face Verification Portal</title>
+    <style>:root {
+        font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        color-scheme: light dark;
+        color: rgba(255, 255, 255, 0.87);
+        background-color: #242424;
+      }
+      
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+      }
+      
+      .container {
+        max-width: 800px;
+        padding: 2rem;
+        text-align: center;
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      h1 {
+        color: #fff;
+        margin-bottom: 2rem;
+      }
+      
+      .camera-container {
+        margin-bottom: 2rem;
+      }
+      
+      #video {
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        border-radius: 8px;
+        background-color: #333;
+      }
+      
+      .controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+      
+      .button {
+        background-color: #646cff;
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+      
+      .button:hover {
+        background-color: #535bf2;
+      }
+      
+      .button:disabled {
+        background-color: #4a4a4a;
+        cursor: not-allowed;
+      }
+      
+      .result {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        background-color: #333;
+        display: none;
+      }
+      
+      .result.success {
+        display: block;
+        background-color: #22543d;
+        color: #fff;
+      }
+      
+      .result.error {
+        display: block;
+        background-color: #742a2a;
+        color: #fff;
+      }
+      
+      @media (prefers-color-scheme: light) {
+        :root {
+          color: #213547;
+          background-color: #ffffff;
+        }
+        
+        .container {
+          background-color: #ffffff;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+      
+        h1 {
+          color: #213547;
+        }
+      
+        #video {
+          background-color: #f0f0f0;
+        }
+      
+        .result {
+          background-color: #f0f0f0;
+        }
+      }</style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="container">
+        <h1>Face Verification Portal</h1>
+        <div class="camera-container">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvas" style="display: none;"></canvas>
+        </div>
+        <div class="controls">
+          <button id="toggleCamera" class="button">Start Camera</button>
+          <button id="capturePhoto" class="button" disabled>Capture Photo</button>
+        </div>
+        <div id="result" class="result"></div>
+      </div>
+    </div>
+    <script >let stream = null;
+        let isStreamActive = false;
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const toggleButton = document.getElementById('toggleCamera');
+        const captureButton = document.getElementById('capturePhoto');
+        const result = document.getElementById('result');
+        
+        // Toggle camera
+        toggleButton.addEventListener('click', async () => {
+          try {
+            if (!isStreamActive) {
+              stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                  facingMode: 'user',
+                  width: { ideal: 640 },
+                  height: { ideal: 480 }
+                } 
+              });
+              video.srcObject = stream;
+              toggleButton.textContent = 'Stop Camera';
+              captureButton.disabled = false;
+              isStreamActive = true;
+            } else {
+              stopCamera();
+            }
+          } catch (err) {
+            showError('Error accessing camera: ' + err.message);
+          }
+        });
+        
+        // Capture photo
+        captureButton.addEventListener('click', () => {
+          if (!isStreamActive) return;
+        
+          const context = canvas.getContext('2d');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+          // Here you would typically send the image data to a backend service
+          // for actual face verification. For this demo, we'll simulate success
+          simulateVerification();
+        });
+        
+        function stopCamera() {
+          if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+            stream = null;
+          }
+          toggleButton.textContent = 'Start Camera';
+          captureButton.disabled = true;
+          isStreamActive = false;
+        }
+        
+        function showError(message) {
+          result.className = 'result error';
+          result.textContent = message;
+        }
+        
+        function showSuccess(message) {
+          result.className = 'result success';
+          result.textContent = message;
+        }
+        
+        // Simulate verification process
+        function simulateVerification() {
+          result.className = 'result';
+          result.textContent = 'Verifying...';
+          
+          setTimeout(() => {
+            const isSuccess = Math.random() > 0.5; // Simulate random success/failure
+            if (isSuccess) {
+              showSuccess('Face verification successful!');
+            } else {
+              showError('Face verification failed. Please try again.');
+            }
+          }, 1500);
+        }
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+          stopCamera();
+        });</script>
+  </body>
+</html>
