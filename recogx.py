@@ -5,6 +5,7 @@ import dlib
 import time
 import random
 from ultralytics import YOLO
+import winsound
 
 # Load YOLO Model for Phone Detection
 model = YOLO("yolov8n.pt")  # YOLOv8 Nano model
@@ -33,8 +34,8 @@ def detect_phone(frame, frame_count):
         for box in r.boxes:
             cls = int(box.cls[0])  
             conf = float(box.conf[0])  
-
-            if cls == 67 and conf > 0.7:  # Class ID 67 = "cell phone"
+            print(cls)
+            if cls == 67 or cls == 28 or cls == 15 and conf > 0.2 :  # Class ID 67 = "cell phone"
                 print("❌ Phone Detected! Process Rejected!")
                 cv2.putText(frame, "Phone Detected! Process Rejected", (50, 50),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
@@ -45,7 +46,7 @@ def detect_phone(frame, frame_count):
 
 # Highly Optimized Eye Blink Detection
 def eye_blink_verification():
-    required_blinks = random.randint(5, 7)
+    required_blinks = random.randint(3,4)
     completed_blinks = 0
     print(f"🔹 Blink your eyes {required_blinks} times!")
 
@@ -55,7 +56,7 @@ def eye_blink_verification():
     frame_count = 0  # YOLO Optimization
     baseline_ear = None
 
-    while completed_blinks < required_blinks and time.time() - start_time < 15:
+    while completed_blinks < required_blinks and time.time() - start_time < 30:
         ret, frame = cap.read()
         if not ret:
             break
@@ -93,8 +94,10 @@ def eye_blink_verification():
             if avg_ear < blink_threshold:
                 consecutive_closed_frames += 1
             else:
-                if consecutive_closed_frames >= 2:  # Only count if closed for 3+ frames
+                print(random.randint(5,7))
+                if consecutive_closed_frames >= random.randint(5,7):  # Only count if closed for 3+ frames
                     completed_blinks += 1
+                    winsound.Beep(1000,500)
                     print(f"✔ Blink {completed_blinks}/{required_blinks} detected!")
                 consecutive_closed_frames = 0  
 
