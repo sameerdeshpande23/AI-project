@@ -34,8 +34,7 @@ def detect_phone(frame, frame_count):
         for box in r.boxes:
             cls = int(box.cls[0])  
             conf = float(box.conf[0])  
-            print(cls)
-            if cls == 67 or cls == 28 or cls == 15 and conf > 0.2 :  # Class ID 67 = "cell phone"
+            if cls == 67 or cls == 28 or cls == 15 and conf > 0.2:  # Class ID 67 = "cell phone"
                 print("❌ Phone Detected! Process Rejected!")
                 cv2.putText(frame, "Phone Detected! Process Rejected", (50, 50),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
@@ -46,7 +45,7 @@ def detect_phone(frame, frame_count):
 
 # Highly Optimized Eye Blink Detection
 def eye_blink_verification():
-    required_blinks = random.randint(3,4)
+    required_blinks = random.randint(3, 4)
     completed_blinks = 0
     print(f"🔹 Blink your eyes {required_blinks} times!")
 
@@ -62,7 +61,7 @@ def eye_blink_verification():
             break
         frame_count += 1
 
-        # **Phone Detection (Runs every 10 frames)**
+        # *Phone Detection (Runs every 10 frames)*
         if detect_phone(frame, frame_count):
             return False  # Stop if phone detected
 
@@ -79,7 +78,7 @@ def eye_blink_verification():
             right_ear = eye_aspect_ratio(right_eye)
             avg_ear = (left_ear + right_ear) / 2.0
 
-            # **Dynamically Adjust EAR Baseline (Ignore First 1.5s)**
+            # *Dynamically Adjust EAR Baseline (Ignore First 1.5s)*
             if time.time() - start_time < 1.5:
                 EAR_BUFFER.append(avg_ear)
                 continue  # Skip early frames to establish a stable baseline
@@ -87,25 +86,20 @@ def eye_blink_verification():
             if baseline_ear is None:
                 baseline_ear = np.median(EAR_BUFFER)  # Set initial baseline
 
-            # **Adaptive Blink Threshold**
+            # *Adaptive Blink Threshold*
             blink_threshold = max(baseline_ear * 0.75, 0.18)  # Ensures threshold doesn't drop too low
 
-            # **Smooth Blink Detection**
+            # *Smooth Blink Detection*
             if avg_ear < blink_threshold:
                 consecutive_closed_frames += 1
             else:
-                print(random.randint(5,7))
-                if consecutive_closed_frames >= random.randint(5,7):  # Only count if closed for 3+ frames
+                if consecutive_closed_frames >= random.randint(5, 7):  # Only count if closed for 3+ frames
                     completed_blinks += 1
-                    winsound.Beep(1000,500)
+                    winsound.Beep(1000, 500)
                     print(f"✔ Blink {completed_blinks}/{required_blinks} detected!")
                 consecutive_closed_frames = 0  
 
-            # **Draw face rectangle**
-            x, y, w, h = (faces[0].left(), faces[0].top(), faces[0].width(), faces[0].height())
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-            # **Display blink count**
+            # *Display blink count*
             elapsed_time = int(15 - (time.time() - start_time))
             cv2.putText(frame, f"Blinks: {completed_blinks}/{required_blinks} | Time Left: {elapsed_time}s",
                         (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
